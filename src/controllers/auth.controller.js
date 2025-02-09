@@ -1,6 +1,8 @@
 import UserModel from "../models/user.model.js";
 import bcrypt from 'bcryptjs';
 import { generatetoken } from "../lib/util.js";
+import cloudinary from '../lib/cloudinary.js';
+
 export const signup=async (req,res)=>{
     const {fullName,email,password}=req.body;
     try{
@@ -30,7 +32,7 @@ export const signup=async (req,res)=>{
         return res.status(400).json({message:'Invalid User Credentials!'})
     }
     catch(err){
-        console.log('Error in signup controller',err);
+        console.log('Error in signup controller',err.message);
         return res.status(500).json({message:'Internal Server Error'});
     }
 }
@@ -50,10 +52,42 @@ export const login=async (req,res)=>{
         })
     }
     catch(err){
-        console.log("Login controller error",err);
-        return res.status(400).json({message:"Internal Server Error"});
+        console.log("Login controller error",err.message);
+        return res.status(500).json({message:"Internal Server Error"});
     }
 }
 export const logout=(req,res)=>{
-    res.send('logout');
+    try{
+        res.cookie("jwt","",{maxAge:0});
+        return res.status(200).json({messsage:'Logged Out Successfully'});
+    }
+    catch(err){
+        console.log('Logout controller error',err.message);
+        return res.status(500).json({message:'Internal Server Error'});
+    }
+}
+export const updateProfile=async (req,res)=>{
+    try{
+        const {profilePic}=req.body;
+        const userId=req.user._id;
+        if(!profilePic){
+            return res.status(400).json({message:'Profile pic required'});
+        }
+        const uploadResponse=await cloudinary.uploader.upload(profilePic);
+        const updatedUser=await UserModel.findByIdAndUpdate(userId,{profilePic:uploadResponse.secure_url},{new:true});
+        res.status(200).json(updatedUser)
+    }
+    catch(error){
+        console.log("Error in updateProfile",error.message);
+        return res.status(500).json({message:"Internal Server Error"});
+    }
+}
+export const checkAuth=(req,res)=>{
+    try{
+       return res.status(200).json(req.user);
+    }
+    catch(error){
+        console.log("Error in checkAuth",error.message);
+        return res.status(500).json({message:"Internal Server Error"});
+    }
 }
