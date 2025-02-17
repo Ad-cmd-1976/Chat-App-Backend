@@ -1,6 +1,7 @@
 import UserModel from "../models/user.model.js";
 import MessageModel from "../models/message.model.js";
 import cloudinary from "../lib/cloudinary.js";
+import mongoose from "mongoose";
 
 export const getUsersForSidebar= async (req,res)=>{
     try{
@@ -17,13 +18,15 @@ export const getUsersForSidebar= async (req,res)=>{
 export const getMessages= async (req,res)=>{
     try{
         const {id:userToChatId}=req.params;
-        const loggedInUserId=res.user._id;
+        const loggedInUserId=req.user._id;
+        // console.log(userToChatId.slice(1),loggedInUserId);
         const message=await MessageModel.find({
             $or:[
                 {senderId:loggedInUserId,receiverId:userToChatId},
                 {senderId:userToChatId,receiverId:loggedInUserId}
             ]
         })
+        // console.log(message);
         res.status(200).json(message);
     }
     catch(error){

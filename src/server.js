@@ -5,9 +5,9 @@ import { connectdb } from './lib/db.js';
 import authRoute from './routes/auth.route.js';
 import messageRoute from './routes/message.route.js';
 import cors from 'cors'
+import {app,server} from './lib/socket.js'
 dotenv.config();
 
-const app=express();
 const port=process.env.PORT || 8080;
 
 app.use(cors({
@@ -24,7 +24,7 @@ app.get('/',(req,res)=>{
    res.send('okay');
 })
 
-app.listen(port,()=>{
+server.listen(port,()=>{
     console.log(`Listening at port ${port}`);
     connectdb();
 })
